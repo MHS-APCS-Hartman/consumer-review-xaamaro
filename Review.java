@@ -186,6 +186,9 @@ public class Review {
 	}
 	return sentiment;
 }
+	
+	
+	
 public static int starRating (String fileName)
 {
 	double sent = totalSentiment(fileName);
