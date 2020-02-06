@@ -114,26 +114,6 @@ public class Review {
     return punc;
   }
   
-   /**
-   * Returns the word after removing any beginning or ending punctuation
-   */
-  public static String removePunctuation( String word )
-  {
-    while(word.length() > 0 && !Character.isAlphabetic(word.charAt(0)))
-    {
-      word = word.substring(1);
-    }
-    while(word.length() > 0 && !Character.isAlphabetic(word.charAt(word.length()-1)))
-    {
-      word = word.substring(0, word.length()-1);
-    }
-    
-    return word;
-  }
- 
-
-
-  
   /** 
    * Randomly picks a positive adjective from the positiveAdjectives.txt file and returns it.
    */
@@ -165,156 +145,183 @@ public class Review {
       return randomNegativeAdj();
     }
   }
-  public static double totalSentiment(String fileName)
-{
-	String word = “”;
-	double sentiment = 0.0;
-	String review = textToString(fileName);
-	for (int i = 0; i < review.length(); i++)
-	{
-		String letter = review.substring(i, i+1);
-		if (!(letter.equals(“ “)))
-		{
-			word = word + letter;
-		}
-		else
-		{
-			removePunctuation(word);
-			sentiment = sentiment + sentiment(word);
-			word = “ “;
-		}
-	}
-	return sentiment;
-}
-	
-	
-	
-public static int starRating (String fileName)
-{
-	double sent = totalSentiment(fileName);
-	int rating;
-	if(sent<-3)
-	{
-		rating = 1;
-	}
-	else if(sentiment<0)
-	{
-		rating = 2;
-	}
-	else if(sentiment<3)
-	{
-		rating = 3;
-	}
-	else if(sentiment<6)
-	{
-		rating = 4;
-	}
-	else
-	{
-		rating = 5;
-	}
-	return rating;
-}
-public static String fakeReview(String fileName)
-
+  
+  /**
+   * Returns the word after removing any beginning or ending punctuation
+   */
+  public static String removePunctuation( String word )
   {
-     String review = textToString(fileName);
-     String fake = "";
-     
-     for(int i = 0; i < review.length()-1; i++)
-     {
-        if(review.substring(i, i+1).equals("*"))
-        {
-           i++;
-           String replace = "";
-           boolean isWord = true;
-           while(isWord)
-           {
-              i++;
-              if(review.substring(i, i+1).equals(" "))
-              {
-                 isWord = false;
-              }
-           }
-           replace = randomAdjective() + " ";
-           fake += replace;
-        }
-        else
-        {
-           fake += review.substring(i, i+1);
-        }
-     }
-     return fake;
-}
-
-public static String fakeReview(String fileName)
-
-
-
-
- {
-
-
-     String text = textToString(fileName);
-
-
+    while(word.length() > 0 && !Character.isAlphabetic(word.charAt(0)))
+    {
+      word = word.substring(1);
+    }
+    while(word.length() > 0 && !Character.isAlphabetic(word.charAt(word.length()-1)))
+    {
+      word = word.substring(0, word.length()-1);
+    }
     
+    return word;
+  }
+  
+ /* Takes an online review and returns the total sentiment value of that review. */
+  public static double totalSentiment(String fileName)
+  {
+      double total = 0;
+      String word = "";
+      String reviewText = textToString(fileName);
 
-
-     for(int i = 0; i < text.length(); i++)
-
-
-     {
-
-
-        if(text.charAt(i) == '*')
-
-
-        {
-
-
-           int j = i;
-
-
-           while(true)
-
-
-           {
-
-
-              i++;
-
-
-              if(text.charAt(i) == ' ')
-
-
-              {
-
-
-                 break;
-
-
-              }
-
-
-           }
-
-
-           int k = i;
-
-
-           text = text.substring(0, j) + randomAdjective() + text.substring(k);
-
-
-        }
-
-
-     }
-
-
-     return text;
-
-
+      // moves through the entire review
+      for (int i = 0; i < reviewText.length(); i++)
+      {
+         // checks if a word has been completed
+        if (reviewText.substring(i, i+1).equals(" ") || i + 1 == reviewText.length())
+         {
+            total += sentimentVal(removePunctuation(word));
+            word = "";
+         }
+         else
+         {
+            word += reviewText.substring(i, i+1);
+         }
+      }
+      return total;
   }
 
+    
+  public static int starRating(String fileName)
+   {
+     double sentiment = totalSentiment(fileName);
+     int rating;
+
+     if (sentiment < 0)
+     {
+       rating = 1;
+     }
+     else if (sentiment < 3)
+     {
+       rating = 2;
+     }
+     else if (sentiment < 6)
+     {
+       rating = 3;
+     }
+     else if (sentiment < 30)
+     {
+       rating = 4;
+     }
+     else
+     {
+       rating = 5;
+     }
+     return rating;
+  }
+  
+  /* Returns a computer generated fake online review. 
+  Precondition: fileName must be a .txt file. */
+    public static String fakeReview(String fileName)
+    {
+      String word = "";
+      String reviewText = textToString(fileName);
+      String newReview = "";
+      
+      // goes through the entire review
+      for (int i = 0; i < reviewText.length(); i++)
+      {
+          if (reviewText.substring(i, i+1).equals(" ") || i == reviewText.length() -1)
+          {
+              if (i == reviewText.length() -1) //adds last letter to the review
+              {
+                  word += reviewText.substring(i, i+1);
+              }
+              
+              // finds the adjectives that start with * and changes them
+              if (word.startsWith("*"))
+              {
+                  String newAdjective = "";
+                  while (newAdjective.equals(""))
+                  {
+                      newAdjective = randomAdjective();
+                  }
+                  // replaces the old adjective with the new and resets word
+                  newReview += newAdjective + getPunctuation(word) + " ";
+                  word = "";
+              }
+              else
+              {
+                  newReview += word + " ";
+                  word = "";
+              }
+          }
+          else
+          {
+              word += reviewText.substring(i, i+1);
+          }
+      }
+      return newReview;
+    }
+
+/* Returns a computer generated online review that can be either positive or negative. 
+Precondition: fileName must be a .txt file. */
+    public static String fakeReviewStronger(String fileName)
+    {
+        String word = "";
+        String reviewText = textToString(fileName);
+        String newReview = "";
+        
+        // goes through the entire review
+        for (int i = 0; i < reviewText.length(); i++)
+        {
+             if (reviewText.substring(i, i+1).equals(" ") || i == reviewText.length() -1)
+             {
+                   if (i == reviewText.length() -1) //adds last letter to the review
+                   {
+                      word += reviewText.substring(i, i+1);
+                   }
+                 
+                 // finds the adjectives that start with *
+                 if (word.startsWith("*"))
+                 {
+                     // gets the sentiment value of the word and replaces it with a positive or negative adjective
+                     double sentiment = sentimentVal(word);
+                     String newAdjective = "";
+                     
+                     if (sentiment > 0)
+                     {
+                         while (newAdjective.equals("") || sentimentVal(newAdjective) <= sentiment)
+                         {
+                           newAdjective = randomPositiveAdj();
+                         }
+                     }
+                     else if (sentiment < 0)
+                     {
+                         while (newAdjective.equals("") || sentimentVal(newAdjective) >= sentiment)
+                         {
+                           newAdjective = randomNegativeAdj();
+                         }
+                     }
+                     else
+                     {
+                        word = word.substring(1);
+                        newAdjective = removePunctuation(word);
+                     }
+                     
+                     //replaces the old adjective with the new adjective
+                     newReview += newAdjective + getPunctuation(word) + " ";
+                     word = "";
+                 }
+                 else
+                 {
+                     newReview += word + " ";
+                     word = "";
+                 }
+               }
+               else
+               {
+                  word += reviewText.substring(i, i+1);
+               }
+
+        }
+        return newReview;
+    }
 }
+
